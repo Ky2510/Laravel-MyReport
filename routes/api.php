@@ -53,7 +53,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // KHUSUS ADMIN
-    Route::middleware('check_role:admin|superadmin')->group(function () {
+    Route::middleware('check_role:admin|super_admin')->group(function () {
         Route::get('/admin/dashboard', [HomeController::class, 'dashboardAdmin']);
     });
 });
