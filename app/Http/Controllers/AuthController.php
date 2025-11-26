@@ -44,7 +44,7 @@ class AuthController extends Controller
 
         // Generate token
         $token = bin2hex(random_bytes(40));
-        $user->update(['api_token' => $token]);
+        $user->update(['token' => $token]);
 
         return response()->json([
             'token' => $token,
@@ -59,7 +59,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->update(['api_token' => null]);
+        $request->user()->update(['token' => null]);
 
         return response()->json([
             'message' => 'Logged out successfully'

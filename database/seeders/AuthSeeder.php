@@ -52,7 +52,7 @@ class AuthSeeder extends Seeder
             [
                 'name' => 'Super Admin',
                 'password' => bcrypt('password123'),
-                'api_token' => null
+                'token' => null
             ]
         );
 
