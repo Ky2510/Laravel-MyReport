@@ -1,0 +1,225 @@
+{
+  "info": {
+    "name": "Authentication APIs (Updated)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "auth-collection-updated",
+    "description": "Updated authentication APIs with working credentials and role system"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string",
+      "description": "API base URL"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Authentication token (auto-filled by login)"
+    }
+  ],
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"username\": \"johndoe\",\n  \"password\": \"password123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/register",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register"]
+        },
+        "description": "Register a new user. The user will automatically get the 'user' role by default."
+      },
+      "response": []
+    },
+    {
+      "name": "Login (Super Admin)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Set working credentials for testing",
+              "pm.collectionVariables.set('login_creds', '{\"login\":\"yasin\",\"password\":\"autoall1\"}');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"login\":\"yasin\",\"password\":\"autoall1\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var response = pm.response.json();",
+              "    pm.collectionVariables.set('token', response.token);",
+              "    pm.collectionVariables.set('user_info', JSON.stringify(response.user));",
+              "    ",
+              "    pm.test('✅ Login successful', function () {",
+              "        pm.expect(pm.response.code).to.equal(200);",
+              "    });",
+              "    ",
+              "    pm.test('✅ Token received', function () {",
+              "        pm.expect(response.token).to.be.a('string');",
+              "        pm.expect(response.token).to.have.lengthOf(80);",
+              "        pm.expect(pm.collectionVariables.get('token')).to.not.be.empty;",
+              "    });",
+              "    ",
+              "    pm.test('✅ User has super_admin role', function () {",
+              "        pm.expect(response.user.role).to.equal('super_admin');",
+              "    });",
+              "    ",
+              "    pm.test('✅ User ID is UUID', function () {",
+              "        pm.expect(response.user.id).to.match(/^[a-f0-9]{32}$/);",
+              "    });",
+              "    ",
+              "    console.log('🎉 Login successful! Token saved to variables.');",
+              "    console.log('👤 User: ' + response.user.name + ' (' + response.user.username + ')');",
+              "    console.log('🔑 Role: ' + response.user.role);",
+              "    console.log('🆔 User ID: ' + response.user.id);",
+              "} else {",
+              "    pm.test('❌ Login failed', function () {",
+              "        pm.expect.fail('Login failed with status: ' + pm.response.code);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Get Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile"]
+        },
+        "description": "Get current user profile. Requires authentication token."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var response = pm.response.json();",
+              "    pm.test('✅ Profile retrieved successfully', function () {",
+              "        pm.expect(response).to.have.property('id');",
+              "        pm.expect(response).to.have.property('name');",
+              "        pm.expect(response).to.have.property('email');",
+              "    });",
+              "} else {",
+              "    pm.test('❌ Profile retrieval failed', function () {",
+              "        pm.expect.fail('Profile failed with status: ' + pm.response.code);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/logout",
+          "host": ["{{base_url}}"],
+          "path": ["api", "logout"]
+        },
+        "description": "Logout current user and invalidate token."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    pm.collectionVariables.set('token', '');",
+              "    pm.collectionVariables.set('user_info', '');",
+              "    ",
+              "    pm.test('✅ Logout successful', function () {",
+              "        pm.expect(pm.response.code).to.equal(200);",
+              "        pm.expect(pm.collectionVariables.get('token')).to.be.empty;",
+              "    });",
+              "    ",
+              "    console.log('👋 Logged out successfully. Token cleared.');",
+              "} else {",
+              "    pm.test('❌ Logout failed', function () {",
+              "        pm.expect.fail('Logout failed with status: ' + pm.response.code);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Check if we have a valid token for authenticated requests",
+          "if (!pm.collectionVariables.get('token') && pm.request.url.path.includes('/api/') && !pm.request.url.path.includes('/login') && !pm.request.url.path.includes('/register')) {",
+          "    console.log('⚠️  No token found. Please login first.');",
+          "}"
+        ]
+      }
+    }
+  ]
+}
