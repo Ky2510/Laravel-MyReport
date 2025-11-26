@@ -162,7 +162,7 @@ class UserController extends Controller
             return response()->json([
                 'error' => false,
                 'message' => 'Successfully updated user',
-                'data' => $user,
+                'data' => $user->load('roles')
             ], 200);
         } catch (\Throwable $th) {
             return response()->json([
