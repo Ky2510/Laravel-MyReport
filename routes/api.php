@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
@@ -55,5 +56,13 @@ Route::middleware('auth:api')->group(function () {
     // KHUSUS ADMIN
     Route::middleware('check_role:admin|super_admin')->group(function () {
         Route::get('/admin/dashboard', [HomeController::class, 'dashboardAdmin']);
+
+
+        // Department
+        Route::get('/departments', [DepartmentController::class, 'index']);
+        Route::post('/departments', [DepartmentController::class, 'store']);
+        Route::post('/departments/{id}', [DepartmentController::class, 'update']);
+        Route::post('/departments/{id}', [DepartmentController::class, 'destroy']);
+
     });
 });
