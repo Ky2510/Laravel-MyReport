@@ -1,0 +1,129 @@
+{
+  "info": {
+    "name": "Permission Management APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "permissions-collection"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "List All Permissions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/permissions",
+          "host": ["{{base_url}}"],
+          "path": ["api", "permissions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create New Permission",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"manage_analytics\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/permissions",
+          "host": ["{{base_url}}"],
+          "path": ["api", "permissions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Permission",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"view_analytics_dashboard\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/permissions/{{permissionId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "permissions", "{{permissionId}}"]
+        },
+        "description": "Replace {{permissionId}} with actual permission ID from the permissions list"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Permission",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/permissions/{{permissionId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "permissions", "{{permissionId}}"]
+        },
+        "description": "Replace {{permissionId}} with actual permission ID from the permissions list. **WARNING**: This action is irreversible!"
+      },
+      "response": []
+    }
+  ]
+}

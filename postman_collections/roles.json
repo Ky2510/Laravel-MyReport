@@ -1,0 +1,152 @@
+{
+  "info": {
+    "name": "Role Management APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "roles-collection"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "List All Roles",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/roles",
+          "host": ["{{base_url}}"],
+          "path": ["api", "roles"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create New Role",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"quality_manager\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/roles",
+          "host": ["{{base_url}}"],
+          "path": ["api", "roles"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Role by ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/roles/{{roleId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "roles", "{{roleId}}"]
+        },
+        "description": "Replace {{roleId}} with actual role ID from the roles list"
+      },
+      "response": []
+    },
+    {
+      "name": "Update Role",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"senior_quality_manager\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/roles/{{roleId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "roles", "{{roleId}}"]
+        },
+        "description": "Replace {{roleId}} with actual role ID from the roles list"
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Role",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/roles/{{roleId}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "roles", "{{roleId}}"]
+        },
+        "description": "Replace {{roleId}} with actual role ID from the roles list. **WARNING**: This action is irreversible!"
+      },
+      "response": []
+    }
+  ]
+}

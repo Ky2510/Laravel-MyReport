@@ -1,0 +1,77 @@
+{
+  "info": {
+    "name": "Dashboard APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "dashboards-collection"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Super Admin Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/superadmin/dashboard",
+          "host": ["{{base_url}}"],
+          "path": ["api", "superadmin", "dashboard"]
+        },
+        "description": "Access super admin dashboard. Requires super_admin role."
+      },
+      "response": []
+    },
+    {
+      "name": "Admin Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/admin/dashboard",
+          "host": ["{{base_url}}"],
+          "path": ["api", "admin", "dashboard"]
+        },
+        "description": "Access admin dashboard. Requires admin or super_admin role."
+      },
+      "response": []
+    }
+  ]
+}
