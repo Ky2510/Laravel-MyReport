@@ -49,8 +49,8 @@ Route::middleware('auth:api')->group(function () {
         // USER
         Route::get('/users', [UserController::class, 'index']);
         Route::post('/users', [UserController::class, 'store']);
-        Route::put('/users/{id}', [UserController::class, 'update']);
-        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+        Route::post('/users/update/{id}', [UserController::class, 'update']);
+        Route::post('/users/delete/{id}', [UserController::class, 'destroy']);
     });
 
     // KHUSUS ADMIN
@@ -61,8 +61,8 @@ Route::middleware('auth:api')->group(function () {
         // Department
         Route::get('/departments', [DepartmentController::class, 'index']);
         Route::post('/departments', [DepartmentController::class, 'store']);
-        Route::post('/departments/{id}', [DepartmentController::class, 'update']);
-        Route::post('/departments/{id}', [DepartmentController::class, 'destroy']);
+        Route::post('/departments/update/{id}', [DepartmentController::class, 'update']);
+        Route::post('/departments/delete/{id}', [DepartmentController::class, 'destroy']);
 
     });
 });
