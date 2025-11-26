@@ -29,7 +29,7 @@ Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // KHUSUS SUPERADMIN
-    Route::middleware('check_role:superadmin')->group(function () {
+    Route::middleware('check_role:super_admin')->group(function () {
         Route::get('/superadmin/dashboard', [HomeController::class, 'dashboardSuperAdmin']);
 
         // ROLE

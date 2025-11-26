@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\MyHelper\Constants\HttpStatusCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
@@ -53,9 +54,25 @@ class RoleController extends Controller
         }
 
         try {
-            $role = Role::create([
-                'name' => $request->name
+            // Generate a unique ID for the role
+            $roleId = 'role_' . uniqid();
+
+            // Insert the role into database
+            DB::table('roles')->insert([
+                'id' => $roleId,
+                'name' => $request->name,
+                'state' => 1,
+                'guard_name' => 'web',
+                'createBy' => null,
+                'updateBy' => null,
+                'createdAt' => now(),
+                'updatedAt' => now(),
+                'created_at' => now(),
+                'updated_at' => now()
             ]);
+
+            // Get the created role
+            $role = DB::table('roles')->where('id', $roleId)->first();
 
             return response()->json([
                 'status' => HttpStatusCodes::HTTP_OK,
