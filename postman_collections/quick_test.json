@@ -1,0 +1,342 @@
+{
+  "info": {
+    "name": "Quick API Test (Updated)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "quick-test-updated",
+    "description": "Quick test collection to verify all API endpoints are working after fixes"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "🚀 Step 1: Login (Get Token)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"login\":\"yasin\",\"password\":\"autoall1\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var response = pm.response.json();",
+              "    pm.collectionVariables.set('token', response.token);",
+              "    pm.test('✅ Login successful - Token saved', function () {",
+              "        pm.expect(response.token).to.be.a('string');",
+              "        pm.expect(response.user.role).to.equal('super_admin');",
+              "    });",
+              "    console.log('🎉 Token: ' + response.token.substring(0, 20) + '...');",
+              "} else {",
+              "    pm.test('❌ Login failed', function () {",
+              "        pm.expect.fail('Login failed with status: ' + pm.response.code);",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "👤 Step 2: Test Profile",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/profile",
+          "host": ["{{base_url}}"],
+          "path": ["api", "profile"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Profile endpoint working', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "    var user = pm.response.json();",
+              "    pm.expect(user).to.have.property('name');",
+              "    pm.expect(user).to.have.property('email');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "🔐 Step 3: Test Superadmin Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/superadmin/dashboard",
+          "host": ["{{base_url}}"],
+          "path": ["api", "superadmin", "dashboard"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Superadmin dashboard accessible', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "    var response = pm.response.json();",
+              "    pm.expect(response.message).to.include('Super Admin');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "📋 Step 4: Test Roles Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/roles",
+          "host": ["{{base_url}}"],
+          "path": ["api", "roles"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Roles endpoint working', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "    var response = pm.response.json();",
+              "    pm.expect(response.error).to.be.false;",
+              "    pm.expect(response.data).to.be.an('array');",
+              "    pm.expect(response.data.length).to.be.above(0);",
+              "});",
+              "",
+              "// Check for super_admin role in response",
+              "var response = pm.response.json();",
+              "var hasSuperAdmin = response.data.some(function(role) {",
+              "    return role.name === 'super_admin';",
+              "});",
+              "pm.test('✅ super_admin role found in list', function () {",
+              "    pm.expect(hasSuperAdmin).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "🔑 Step 5: Test Create Role",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\":\"test_role_\" + Date.now()}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/roles",
+          "host": ["{{base_url}}"],
+          "path": ["api", "roles"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Role creation working', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "    var response = pm.response.json();",
+              "    pm.expect(response.status).to.equal(200);",
+              "    pm.expect(response.message).to.include('successfully');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "🔐 Step 6: Test Permissions Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/permissions",
+          "host": ["{{base_url}}"],
+          "path": ["api", "permissions"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Permissions endpoint working', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "    var response = pm.response.json();",
+              "    pm.expect(response).to.be.an('array');",
+              "    pm.expect(response.length).to.be.above(0);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "👥 Step 7: Test Users Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/users",
+          "host": ["{{base_url}}"],
+          "path": ["api", "users"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Users endpoint working', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "    var response = pm.response.json();",
+              "    pm.expect(response).to.be.an('array');",
+              "    pm.expect(response.length).to.be.above(0);",
+              "});",
+              "",
+              "// Check for user with super_admin role",
+              "var response = pm.response.json();",
+              "var hasSuperAdminUser = response.some(function(user) {",
+              "    return user.roles && user.roles.some(function(role) {",
+              "        return role.name === 'super_admin';",
+              "    });",
+              "});",
+              "pm.test('✅ Found user with super_admin role', function () {",
+              "    pm.expect(hasSuperAdminUser).to.be.true;",
+              "});"
+            ]
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "🚪 Step 8: Logout",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/logout",
+          "host": ["{{base_url}}"],
+          "path": ["api", "logout"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.collectionVariables.set('token', '');",
+              "pm.test('✅ Logout successful', function () {",
+              "    pm.expect(pm.response.code).to.equal(200);",
+              "});",
+              "console.log('👋 All tests completed!');"
+            ]
+          }
+        }
+      ],
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "console.log('🔄 Starting: ' + pm.info.requestName);",
+          "console.log('🌐 Base URL: ' + pm.collectionVariables.get('base_url'));",
+          "console.log('🔑 Token exists: ' + (pm.collectionVariables.get('token') ? 'Yes' : 'No'));"
+        ]
+      }
+    }
+  ]
+}
