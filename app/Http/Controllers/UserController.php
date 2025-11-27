@@ -20,7 +20,7 @@ class UserController extends Controller
 
         try {
 
-            $query = User::where('status', 1)->with(['roles:id,name,created_at,updated_at']);
+            $query = User::where('status', 1)->with(['department','roles:id,name,created_at,updated_at']);
 
             $query->when($search != null, function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%');
@@ -143,21 +143,19 @@ class UserController extends Controller
             ]);
 
 
-            if ($request->role) {
 
-                $role = Role::where('name', $request->role)->first();
+            $role = Role::where('name', $request->role)->first();
 
-                if (!$role) {
-                    return response()->json([
-                        'error' => true,
-                        'message' => 'Role not found',
-                    ], 400);
-                }
-
-                $user->roles()->detach();
-
-                $user->assignRole($role->id);
+            if (!$role) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Role not found',
+                ], 400);
             }
+
+            $user->roles()->detach();
+            $user->assignRole($role->id);
+
 
             return response()->json([
                 'error' => false,

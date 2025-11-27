@@ -35,4 +35,10 @@ class Department extends Model
             }
         });
     }
+
+
+    public function user()
+    {
+        return $this->hasOne(User::class, 'id', 'id');
+    }
 }

@@ -39,6 +39,7 @@ class User extends Authenticatable
         'email',
         'username',
         'password',
+        'department_id',
         'token',
     ];
 
@@ -133,4 +134,11 @@ class User extends Authenticatable
     {
         return 'remember_token';
     }
+
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
 }

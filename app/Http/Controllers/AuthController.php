@@ -33,27 +33,67 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        // Validasi input
         $request->validate([
-            'login' => 'required',
+            'login'    => 'required',
             'password' => 'required',
+            'role'     => 'required|string',
         ]);
 
-        $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-        $user = User::where($loginField, $request->login)->first();
+        try {
+            $loginField = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+            $user = User::with('roles')->where($loginField, $request->login)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            if (!Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Invalid credentials'
+                ], 401);
+            }
+
+            $hasRole = $user->roles->contains(function ($role) use ($request) {
+                return strtolower($role->name) === strtolower($request->role);
+            });
+
+            if (!$hasRole) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Role not allowed for this user'
+                ], 403);
+            }
+
+            $token = bin2hex(random_bytes(40));
+            $user->update(['token' => $token]);
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Login successful',
+                'token' => $token,
+                'user' => $user->load('roles'),
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Validation error',
+                'details' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => true,
+                'message' => 'Something went wrong',
+                'details' => $e->getMessage()
+            ], 500);
         }
-
-        // Generate token
-        $token = bin2hex(random_bytes(40));
-        $user->update(['token' => $token]);
-
-        return response()->json([
-            'token' => $token,
-            'user' => $user
-        ]);
     }
+
 
     public function profile(Request $request)
     {
