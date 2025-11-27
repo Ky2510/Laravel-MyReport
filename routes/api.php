@@ -54,7 +54,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // KHUSUS ADMIN
-    Route::middleware('check_role:admin|super_admin')->group(function () {
+    Route::middleware('check_role:director,super_admin')->group(function () {
         Route::get('/admin/dashboard', [HomeController::class, 'dashboardAdmin']);
 
         // DEPARTMENT
@@ -62,7 +62,8 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/departments', [DepartmentController::class, 'store']);
         Route::post('/departments/update/{id}', [DepartmentController::class, 'update']);
         Route::post('/departments/delete/{id}', [DepartmentController::class, 'destroy']);
+        Route::get('/departments', [DepartmentController::class, 'index']);
 
-
+        Route::post('/assign-department/{id_user}', [DepartmentController::class, 'assignUser']);
     });
 });

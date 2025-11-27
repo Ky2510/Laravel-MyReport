@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Department;
+use App\Models\User;
 use App\MyHelper\Constants\HttpStatusCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -139,6 +140,47 @@ class DepartmentController extends Controller
             return response()->json([
                 'error' => false,
                 'message' => 'Succesfully delete Department',
+                'data'  => $data,
+            ], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'error' => true,
+                'message' => $th->getMessage()
+            ], 400);
+        }
+    }
+
+    public function assignUser(Request $request, $id)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'department_id' => 'required|exists:departments,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => true,
+                'message' => $validator->errors()->all()[0]
+            ], 400);
+        }
+
+        try {
+            $data = User::where(['id' => $id, 'status' => 1])->first();
+
+            if (!$data) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'User not found'
+                ], 404);
+            }
+
+            $data->update([
+                'department_id' => $request->department_id
+            ]);
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Succesfully assign department user',
                 'data'  => $data,
             ], 200);
         } catch (\Throwable $th) {
