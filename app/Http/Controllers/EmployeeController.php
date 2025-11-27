@@ -17,7 +17,11 @@ class EmployeeController extends Controller
         $search = $request->input('search');
 
         try {
-            $data =  Employee::with('department', 'branch')->when($search != null, function ($query) use ($search) {
+            $data = Employee::with([
+                'department',
+                'branch',
+                'ruleSchedule'
+            ])->when($search, function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%');
             });
 
@@ -35,4 +39,5 @@ class EmployeeController extends Controller
             ], HttpStatusCodes::HTTP_BAD_REQUEST);
         }
     }
+
 }

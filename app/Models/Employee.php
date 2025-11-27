@@ -63,4 +63,9 @@ class Employee extends Model
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
+
+    public function ruleSchedule()
+    {
+        return $this->belongsTo(RuleSchedule::class, 'rule_schedules_id');
+    }
 }
