@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
@@ -71,5 +73,17 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/branches/update/{id}', [BranchController::class, 'update']);
         Route::post('/branches/delete/{id}', [BranchController::class, 'destroy']);
         Route::post('/assign-branches/{id_user}', [BranchController::class, 'assignUser']);
+
+        // ATTENDANCE
+        Route::get('/attendances', [AttendanceController::class, 'index']);
+        Route::post('/attendances', [AttendanceController::class, 'store']);
+        Route::post('/attendances/update/{id}', [AttendanceController::class, 'update']);
+        Route::post('/attendances/delete/{id}', [AttendanceController::class, 'destroy']);
+
+        // EMPLOYEE
+        Route::get('/employees', [EmployeeController::class, 'index']);
+        Route::post('/employees', [EmployeeController::class, 'store']);
+        Route::post('/employees/update/{id}', [EmployeeController::class, 'update']);
+        Route::post('/employees/delete/{id}', [EmployeeController::class, 'destroy']);
     });
 });
