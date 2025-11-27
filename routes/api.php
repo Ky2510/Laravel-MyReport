@@ -8,6 +8,7 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RuleScheduleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -85,5 +86,11 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/employees', [EmployeeController::class, 'store']);
         Route::post('/employees/update/{id}', [EmployeeController::class, 'update']);
         Route::post('/employees/delete/{id}', [EmployeeController::class, 'destroy']);
+
+        // RULE SCHEDULE
+        Route::get('/rule-schedules', [RuleScheduleController::class, 'index']);
+        Route::post('/rule-schedules', [RuleScheduleController::class, 'store']);
+        Route::post('/rule-schedules/update/{id}', [RuleScheduleController::class, 'update']);
+        Route::post('/rule-schedules/delete/{id}', [RuleScheduleController::class, 'destroy']);
     });
 });
