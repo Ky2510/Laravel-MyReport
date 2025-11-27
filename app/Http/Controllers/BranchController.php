@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
+use App\Models\Branch;
 use App\Models\User;
 use App\MyHelper\Constants\HttpStatusCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
-class DepartmentController extends Controller
+class BranchController extends Controller
 {
     public function index(Request $request)
     {
@@ -19,11 +19,9 @@ class DepartmentController extends Controller
         $search = $request->input('search');
 
         try {
-            $data =  Department::when($search != null, function ($query) use ($search) {
+            $data =  Branch::when($search != null, function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%');
             });
-
-            $data->status = true;
 
             return response()->json([
                 'error' => false,
@@ -43,9 +41,7 @@ class DepartmentController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'           => 'required|string|max:255|unique:departments,name',
-            'status'         => 'nullable|boolean',
-            'activate_notif'     => 'nullable|boolean',
+            'name'           => 'required|string|max:255|unique:branches,name',
         ]);
         if ($validator->fails()) {
             return response()->json([
@@ -55,15 +51,14 @@ class DepartmentController extends Controller
         }
 
         try {
-            $data = Department::create([
+
+            $data = Branch::create([
                 'name' => $request->name,
-                'status' => $request->status ?? true,
-                'activate_notif' => $request->activate_notif ?? false
             ]);
 
             return response()->json([
                 'error' => false,
-                'message' => 'Succesfully create Department',
+                'message' => 'Succesfully create Branches',
                 'data'  => $data,
             ], 200);
         } catch (\Throwable $th) {
@@ -77,9 +72,7 @@ class DepartmentController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:departments,name,' . $id,
-            'status'         => 'nullable|boolean',
-            'activate_notif'     => 'nullable|boolean',
+            'name' => 'required|string|max:255|unique:branches,name,' . $id,
         ]);
 
         if ($validator->fails()) {
@@ -90,24 +83,22 @@ class DepartmentController extends Controller
         }
 
         try {
-            $data = Department::where('id', $id)->first();
+            $data = Branch::where('id', $id)->first();
 
             if (!$data) {
                 return response()->json([
                     'error' => true,
-                    'message' => 'Department not found',
+                    'message' => 'Branch not found',
                 ], 400);
             }
 
             $data->update([
                 'name' => $request->name,
-                'status' => $request->status ?? true,
-                'activate_notif' => $request->activate_notif ?? false,
             ]);
 
             return response()->json([
                 'error' => false,
-                'message' => 'Succesfully update Department',
+                'message' => 'Succesfully update Branch',
                 'data'  => $data,
             ], 200);
         } catch (\Throwable $th) {
@@ -121,22 +112,20 @@ class DepartmentController extends Controller
     public function destroy($id)
     {
         try {
-            $data = Department::where('id', $id)->first();
+            $data = Branch::where('id', $id)->first();
 
             if (!$data) {
                 return response()->json([
                     'error' => true,
-                    'message' => 'Department not found',
+                    'message' => 'Branch not found',
                 ], 400);
             }
 
-            $data->update([
-                'status' => false
-            ]);
+            $data->delete();
 
             return response()->json([
                 'error' => false,
-                'message' => 'Succesfully delete Department',
+                'message' => 'Succesfully delete Branch',
                 'data'  => $data,
             ], 200);
         } catch (\Throwable $th) {
@@ -149,8 +138,9 @@ class DepartmentController extends Controller
 
     public function assignUser(Request $request, $id)
     {
+
         $validator = Validator::make($request->all(), [
-            'department_id' => 'required|exists:departments,id',
+            'branch_id' => 'required|exists:branches,id',
         ]);
 
         if ($validator->fails()) {
@@ -161,8 +151,7 @@ class DepartmentController extends Controller
         }
 
         try {
-            $data = User::where(['id' => $id, 'status' => 1])->first();
-
+            $data = User::where(['id' => $id])->first();
             if (!$data) {
                 return response()->json([
                     'error' => true,
@@ -171,12 +160,12 @@ class DepartmentController extends Controller
             }
 
             $data->update([
-                'department_id' => $request->department_id
+                'branch_id' => $request->branch_id
             ]);
 
             return response()->json([
                 'error' => false,
-                'message' => 'Succesfully assign department user',
+                'message' => 'Succesfully assign branch user',
                 'data'  => $data,
             ], 200);
         } catch (\Throwable $th) {

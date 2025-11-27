@@ -20,7 +20,7 @@ class UserController extends Controller
 
         try {
 
-            $query = User::where('status', 1)->with(['department','roles:id,name,created_at,updated_at']);
+            $query = User::where('status', 1)->with(['department', 'branch', 'roles:id,name,created_at,updated_at']);
 
             $query->when($search != null, function ($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%');

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PermissionController;
@@ -53,8 +54,8 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/users/delete/{id}', [UserController::class, 'destroy']);
     });
 
-    // KHUSUS ADMIN
-    Route::middleware('check_role:director,super_admin')->group(function () {
+    // KHUSUS ?
+    Route::middleware('check_role:super_admin')->group(function () {
         Route::get('/admin/dashboard', [HomeController::class, 'dashboardAdmin']);
 
         // DEPARTMENT
@@ -62,8 +63,13 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/departments', [DepartmentController::class, 'store']);
         Route::post('/departments/update/{id}', [DepartmentController::class, 'update']);
         Route::post('/departments/delete/{id}', [DepartmentController::class, 'destroy']);
-        Route::get('/departments', [DepartmentController::class, 'index']);
-
         Route::post('/assign-department/{id_user}', [DepartmentController::class, 'assignUser']);
+
+        // BRANCH
+        Route::get('/branches', [BranchController::class, 'index']);
+        Route::post('/branches', [BranchController::class, 'store']);
+        Route::post('/branches/update/{id}', [BranchController::class, 'update']);
+        Route::post('/branches/delete/{id}', [BranchController::class, 'destroy']);
+        Route::post('/assign-branches/{id_user}', [BranchController::class, 'assignUser']);
     });
 });

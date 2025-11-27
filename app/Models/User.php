@@ -40,6 +40,7 @@ class User extends Authenticatable
         'username',
         'password',
         'department_id',
+        'branch_id',
         'token',
     ];
 
@@ -139,6 +140,11 @@ class User extends Authenticatable
     public function department()
     {
         return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
     }
 
 }
