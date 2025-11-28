@@ -58,10 +58,10 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            $role = Role::where('state', 1)->pluck('id');
-            $userRoles = $user->roles->pluck('id');
+            $canLogin = $user->roles()->whereIn('roles.id', function ($query) {
+                $query->select('id')->from('roles')->where('state', 1);
+            })->exists();
 
-            $canLogin = $userRoles->intersect($role)->isNotEmpty();
             if (!$canLogin) {
                 return response()->json([
                     'error' => true,
