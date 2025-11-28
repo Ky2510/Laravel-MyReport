@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class AuthController extends Controller
 {
@@ -33,11 +34,9 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        // Validasi input
         $request->validate([
             'login'    => 'required',
             'password' => 'required',
-            'role'     => 'required|string',
         ]);
 
         try {
@@ -59,14 +58,14 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            $hasRole = $user->roles->contains(function ($role) use ($request) {
-                return strtolower($role->name) === strtolower($request->role);
-            });
+            $role = Role::where('state', 1)->pluck('id');
+            $userRoles = $user->roles->pluck('id');
 
-            if (!$hasRole) {
+            $canLogin = $userRoles->intersect($role)->isNotEmpty();
+            if (!$canLogin) {
                 return response()->json([
                     'error' => true,
-                    'message' => 'Role not allowed for this user'
+                    'message' => 'Your role is not allowed to login.'
                 ], 403);
             }
 
