@@ -45,6 +45,8 @@ class HttpStatusCodes
     const HTTP_UNSUPPORTED_MEDIA_TYPE          = 415;
     const HTTP_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
     const HTTP_EXPECTATION_FAILED              = 417;
+    const HTTP_UNPROCESSABLE_ENTITY            = 422;
+
     // [Server Error 5xx]
     const HTTP_INTERNAL_SERVER_ERROR = 500;
     const HTTP_NOT_IMPLEMENTED       = 501;
@@ -93,6 +95,8 @@ class HttpStatusCodes
         415 => '415 Unsupported Media Type',
         416 => '416 Requested Range Not Satisfiable',
         417 => '417 Expectation Failed',
+        422 => '422 Unprocessable Entity',
+
         // [Server Error 5xx]
         500 => '500 Internal Server Error',
         501 => '501 Not Implemented',

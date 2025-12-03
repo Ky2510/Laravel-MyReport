@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Scopes\DepartmentQueryScope;
+use App\Scopes\FindScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Department extends Model
 {
-    use HasFactory;
+    use HasFactory, DepartmentQueryScope, FindScope;
 
     protected $table = 'departments';
 
@@ -22,6 +24,10 @@ class Department extends Model
         'name',
         'status',
         'activate_notif'
+    ];
+
+    protected $attributes = [
+        'status' => true,
     ];
 
 

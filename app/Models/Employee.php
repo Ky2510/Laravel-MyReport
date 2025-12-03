@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Scopes\EmployeeQueryScope;
+use App\Scopes\FindScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Employee extends Model
 {
-    use HasFactory;
+    use HasFactory, EmployeeQueryScope, FindScope;
 
     protected $table = 'employees';
 
@@ -67,5 +69,15 @@ class Employee extends Model
     public function ruleSchedule()
     {
         return $this->belongsTo(RuleSchedule::class, 'rule_schedules_id');
+    }
+
+    public function scheduleGenerate()
+    {
+        return $this->hasMany(ScheduleGenerate::class, 'rule_schedules_id');
+    }
+
+    public function title()
+    {
+        return $this->belongsTo(Title::class, 'title_id');
     }
 }

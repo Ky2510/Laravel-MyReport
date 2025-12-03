@@ -2,188 +2,120 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DepartmentEvent;
+use App\Http\Controllers\Traits\DatatableValidation;
+use App\Http\Requests\AssignDepartmentRequest;
+use App\Http\Requests\StoreDepartmentRequest;
+use App\Http\Requests\UpdateDepartmentRequest;
+use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
 use App\Models\User;
 use App\MyHelper\Constants\HttpStatusCodes;
+use App\MyHelper\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class DepartmentController extends Controller
 {
+    use DatatableValidation;
+
     public function index(Request $request)
     {
 
-        $draw   = $request->input('draw');
-        $start  = (!$request->input('start')) ? 0 : (int) $request->input('start');
-        $length = (!$request->input('length')) ? 10 : (int) $request->input('length');
-        $search = $request->input('search');
+        $validated = $this->validateDatatable($request, [
+            // 'exampleExtraRule' => 'required|string',
+        ]);
 
+        $draw   = $validated['draw'];
+        $start  = $validated['start'] ?? 0;
+        $length = $validated['length'] ?? 10;
+        $search = $validated['search'] ?? null;
+        // $exampleExtraRule = $validated['exampleExtraRule'];
         try {
-            $data =  Department::when($search != null, function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
+            $query = Department::funcDepartmentByStatus($search);
+            $recordsTotal = $query->count();
 
-            $data->status = true;
+            $data = DepartmentResource::collection($query->skip($start)->take($length)->get());
 
-            return response()->json([
-                'error' => false,
-                'draw' => $draw,
-                'recordsTotal' => $data->count(),
-                'recordsFiltered' => $data->count(),
-                'data' => $data->offset($start)->limit($length)->orderBy('name')->get()
-            ], HttpStatusCodes::HTTP_OK);
+            return ResponseHelper::datatable($draw, $recordsTotal, $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error'   => true,
-                'message' => $th->getMessage()
-            ], HttpStatusCodes::HTTP_BAD_REQUEST);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreDepartmentRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name'           => 'required|string|max:255|unique:departments,name',
-            'status'         => 'nullable|boolean',
-            'activate_notif'     => 'nullable|boolean',
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
-
         try {
-            $data = Department::create([
-                'name' => $request->name,
-                'status' => $request->status ?? true,
-                'activate_notif' => $request->activate_notif ?? false
-            ]);
+            $data = Department::create($request->validated());
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully create Department',
-                'data'  => $data,
-            ], 200);
+            event(new DepartmentEvent($data, 'created'));
+
+            return ResponseHelper::success('Successfully create Department', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateDepartmentRequest $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:departments,name,' . $id,
-            'status'         => 'nullable|boolean',
-            'activate_notif'     => 'nullable|boolean',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
-
         try {
-            $data = Department::where('id', $id)->first();
+            $data = Department::findBy('id', $id)->where('status', true)->first();
 
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Department not found',
-                ], 400);
+                return ResponseHelper::error('Department not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
 
-            $data->update([
-                'name' => $request->name,
-                'status' => $request->status ?? true,
-                'activate_notif' => $request->activate_notif ?? false,
-            ]);
+            $data->update($request->validated());
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully update Department',
-                'data'  => $data,
-            ], 200);
+            event(new DepartmentEvent($data, 'updated'));
+
+            return ResponseHelper::success('Successfully create Department', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
     public function destroy($id)
     {
         try {
-            $data = Department::where('id', $id)->first();
+            $data = Department::findBy('id', $id)->where('status', true)->first();
 
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Department not found',
-                ], 400);
+                return ResponseHelper::error('User not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
+
+            event(new DepartmentEvent($data, 'deleted'));
 
             $data->update([
                 'status' => false
             ]);
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully delete Department',
-                'data'  => $data,
-            ], 200);
+
+            return ResponseHelper::success('Successfully delete Report');
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
-    public function assignUser(Request $request, $id)
+    public function assignUser(AssignDepartmentRequest $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'department_id' => 'required|exists:departments,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
 
         try {
-            $data = User::where(['id' => $id, 'status' => 1])->first();
+            $data = User::findBy('id', $id)->where('status', true)->first();
 
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'User not found'
-                ], 404);
+                return ResponseHelper::error('User not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
 
             $data->update([
                 'department_id' => $request->department_id
             ]);
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully assign department user',
-                'data'  => $data,
-            ], 200);
+            event(new DepartmentEvent($data, 'assign_user'));
+
+            return ResponseHelper::success('Successfully assign user department');
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 }

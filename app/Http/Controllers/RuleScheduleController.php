@@ -2,142 +2,77 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\RuleScheduleEvent;
+use App\Http\Controllers\Traits\DatatableValidation;
+use App\Http\Requests\StoreRuleScheduleRequest;
+use App\Http\Requests\UpdateRuleScheduleRequest;
+use App\Http\Resources\RuleScheduleResource;
 use App\Models\RuleSchedule;
 use App\MyHelper\Constants\HttpStatusCodes;
+use App\MyHelper\ResponseHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
 class RuleScheduleController extends Controller
 {
+
+    use DatatableValidation;
+
     public function index(Request $request)
     {
+        $validated = $this->validateDatatable($request, [
+            // 'exampleExtraRule' => 'required|string',
+        ]);
 
-        $draw   = $request->input('draw');
-        $start  = (!$request->input('start')) ? 0 : (int) $request->input('start');
-        $length = (!$request->input('length')) ? 10 : (int) $request->input('length');
-        $search = $request->input('search');
+        $draw   = $validated['draw'];
+        $start  = $validated['start'] ?? 0;
+        $length = $validated['length'] ?? 10;
+        $search = $validated['search'] ?? null;
+        // $exampleExtraRule = $validated['exampleExtraRule'];
 
         try {
-            $data =  RuleSchedule::with('department')->when($search != null, function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
+            $query = RuleSchedule::funcRuleScheduleSearch($search);
+            $recordsTotal = $query->count();
 
-            return response()->json([
-                'error' => false,
-                'draw' => $draw,
-                'recordsTotal' => $data->count(),
-                'recordsFiltered' => $data->count(),
-                'data' => $data->offset($start)->limit($length)->orderBy('name')->get()
-            ], HttpStatusCodes::HTTP_OK);
+            $data = RuleScheduleResource::collection($query->skip($start)->take($length)->get());
+
+            return ResponseHelper::datatable($draw, $recordsTotal, $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error'   => true,
-                'message' => $th->getMessage()
-            ], HttpStatusCodes::HTTP_BAD_REQUEST);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
 
-    public function store(Request $request)
+    public function store(StoreRuleScheduleRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'department_id'  => 'required|exists:departments,id',
-            'name'           => 'required|string|max:255|unique:rule_schedules,name',
-            'check_in'       => 'required|date_format:H:i:s',
-            'check_out'      => 'required|date_format:H:i:s',
-            'overtime_after' => 'required|integer|min:0',
-            'max_after'      => 'required|integer|min:0',
-            'max_att'        => 'required|date_format:H:i:s',
-            'is_shift'       => 'nullable'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
-
         try {
-            $data = RuleSchedule::create([
-                'department_id' => $request->department_id,
-                'name' => $request->name,
-                'check_in'  => $request->check_in,
-                'check_out' => $request->check_out,
-                'overtime_after' => $request->overtime_after,
-                'max_after' => $request->max_after,
-                'max_att' => $request->max_att,
-                'is_shift' => $request->is_shift
-            ]);
+            $data = RuleSchedule::create($request->validated());
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully create Rule Schedule',
-                'data'  => $data,
-            ], 200);
+            event(new RuleScheduleEvent($data, 'created'));
+
+            return ResponseHelper::success('Successfully create Rule Schedule', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateRuleScheduleRequest $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'department_id'  => 'required|exists:departments,id',
-            'name'           => 'required|string|max:255|exists:rule_schedules,name',
-            'check_in'       => 'required|date_format:H:i:s',
-            'check_out'      => 'required|date_format:H:i:s',
-            'overtime_after' => 'required|integer|min:0',
-            'max_after'      => 'required|integer|min:0',
-            'max_att'        => 'required|date_format:H:i:s',
-            'is_shift'       => 'nullable'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
-
         try {
-            $data = RuleSchedule::where('id', $id)->first();
-
+            $data = RuleSchedule::findBy('id', $id)->first();
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Rule Schedulle not found',
-                ], 400);
+                return ResponseHelper::error('Rule Schedule not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
 
-            $data->update([
-                'department_id' => $request->department_id,
-                'name' => $request->name,
-                'check_in'  => $request->check_in,
-                'check_out' => $request->check_out,
-                'overtime_after' => $request->overtime_after,
-                'max_after' => $request->max_after,
-                'max_att' => $request->max_att,
-                'is_shift' => $request->is_shift
-            ]);
+            $data->update($request->validated());
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully create Rule Schedule',
-                'data'  => $data,
-            ], 200);
+            event(new RuleScheduleEvent($data, 'updated'));
+
+            return ResponseHelper::success('Successfully updated Rule Schedule', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
-
-
 
     public function destroy($id)
     {
@@ -145,24 +80,16 @@ class RuleScheduleController extends Controller
             $data = RuleSchedule::where('id', $id)->first();
 
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Rule schedule not found',
-                ], 400);
+                return ResponseHelper::error('Rule Schedule not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
+
+            event(new RuleScheduleEvent($data, 'deleted'));
 
             $data->delete();
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully delete Rule Schedule',
-                'data'  => $data,
-            ], 200);
+            return ResponseHelper::success('Successfully deleted Rule Schedule');
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 }

@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Scopes\FindScope;
+use App\Scopes\RuleScheduleQueryScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class RuleSchedule extends Model
 {
-    use HasFactory;
+    use HasFactory, RuleScheduleQueryScope, FindScope;
 
     protected $table = 'rule_schedules';
 
@@ -44,6 +46,12 @@ class RuleSchedule extends Model
     public function employees()
     {
         return $this->hasMany(Employee::class, 'rule_schedule_id');
+    }
+
+
+    public function scheduleGenerate()
+    {
+        return $this->hasMany(ScheduleGenerate::class, 'rule_schedule_id');
     }
 
     public function department()

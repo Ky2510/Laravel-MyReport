@@ -2,42 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Traits\DatatableValidation;
+use App\Http\Resources\EmployeeResource;
 use App\Models\Employee;
-use App\MyHelper\Constants\HttpStatusCodes;
+use App\MyHelper\ResponseHelper;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
+    use DatatableValidation;
+
     public function index(Request $request)
     {
+        $validated = $this->validateDatatable($request, [
+            // 'exampleExtraRule' => 'required|string',
+        ]);
 
-        $draw   = $request->input('draw');
-        $start  = (!$request->input('start')) ? 0 : (int) $request->input('start');
-        $length = (!$request->input('length')) ? 10 : (int) $request->input('length');
-        $search = $request->input('search');
+        $draw   = $validated['draw'];
+        $start  = $validated['start'] ?? 0;
+        $length = $validated['length'] ?? 10;
+        $search = $validated['search'] ?? null;
+        // $exampleExtraRule = $validated['exampleExtraRule'];
 
         try {
-            $data = Employee::with([
-                'department',
-                'branch',
-                'ruleSchedule'
-            ])->when($search, function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
+            $query = Employee::funcEmployeeSearch($search);
+            $recordsTotal = $query->count();
 
-            return response()->json([
-                'error' => false,
-                'draw' => $draw,
-                'recordsTotal' => $data->count(),
-                'recordsFiltered' => $data->count(),
-                'data' => $data->offset($start)->limit($length)->orderBy('name')->get()
-            ], HttpStatusCodes::HTTP_OK);
+            $data = EmployeeResource::collection($query->skip($start)->take($length)->get());
+
+            return ResponseHelper::datatable($draw, $recordsTotal, $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error'   => true,
-                'message' => $th->getMessage()
-            ], HttpStatusCodes::HTTP_BAD_REQUEST);
+            return ResponseHelper::error($th->getMessage());
         }
     }
-
 }

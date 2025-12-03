@@ -2,34 +2,41 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\BranchEvent;
+use App\Http\Controllers\Traits\DatatableValidation;
+use App\Http\Requests\AssignBranchRequest;
+use App\Http\Requests\StoreBranchRequest;
+use App\Http\Requests\UpdateBranchRequest;
+use App\Http\Resources\BranchResource;
 use App\Models\Branch;
 use App\Models\User;
 use App\MyHelper\Constants\HttpStatusCodes;
+use App\MyHelper\ResponseHelper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class BranchController extends Controller
 {
+    use DatatableValidation;
+
     public function index(Request $request)
     {
+        $validated = $this->validateDatatable($request, [
+            // 'exampleExtraRule' => 'required|string',
+        ]);
 
-        $draw   = $request->input('draw');
-        $start  = (!$request->input('start')) ? 0 : (int) $request->input('start');
-        $length = (!$request->input('length')) ? 10 : (int) $request->input('length');
-        $search = $request->input('search');
+        $draw   = $validated['draw'];
+        $start  = $validated['start'] ?? 0;
+        $length = $validated['length'] ?? 10;
+        $search = $validated['search'] ?? null;
+        // $exampleExtraRule = $validated['exampleExtraRule'];
 
         try {
-            $data =  Branch::when($search != null, function ($query) use ($search) {
-                $query->where('name', 'like', '%' . $search . '%');
-            });
+            $query = Branch::funcBranchSearch($search);
+            $recordsTotal = $query->count();
 
-            return response()->json([
-                'error' => false,
-                'draw' => $draw,
-                'recordsTotal' => $data->count(),
-                'recordsFiltered' => $data->count(),
-                'data' => $data->offset($start)->limit($length)->orderBy('name')->get()
-            ], HttpStatusCodes::HTTP_OK);
+            $data = BranchResource::collection($query->skip($start)->take($length)->get());
+
+            return ResponseHelper::datatable($draw, $recordsTotal, $data);
         } catch (\Throwable $th) {
             return response()->json([
                 'error'   => true,
@@ -38,141 +45,74 @@ class BranchController extends Controller
         }
     }
 
-    public function store(Request $request)
+    public function store(StoreBranchRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name'           => 'required|string|max:255|unique:branches,name',
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
-
         try {
+            $data = Branch::create($request->validated());
 
-            $data = Branch::create([
-                'name' => $request->name,
-            ]);
+            event(new BranchEvent($data, 'created'));
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully create Branches',
-                'data'  => $data,
-            ], 200);
+            return ResponseHelper::success('Successfully create Branch', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
-    public function update(Request $request, $id)
+    public function update(UpdateBranchRequest $request, $id)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255|unique:branches,name,' . $id,
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
-
         try {
-            $data = Branch::where('id', $id)->first();
+            $data = Branch::findBy('id', $id)->first();
+
 
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Branch not found',
-                ], 400);
+                return ResponseHelper::error('Branch not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
 
-            $data->update([
-                'name' => $request->name,
-            ]);
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully update Branch',
-                'data'  => $data,
-            ], 200);
+            $data->update($request->validated());
+
+            event(new BranchEvent($data, 'updated'));
+
+            return ResponseHelper::success('Successfully update Branch', $data);
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
     public function destroy($id)
     {
         try {
-            $data = Branch::where('id', $id)->first();
-
+            $data = Branch::findBy('id', $id)->first();
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'Branch not found',
-                ], 400);
+                return ResponseHelper::error('Branch not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
-
+            event(new BranchEvent($data, 'deleted'));
             $data->delete();
-
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully delete Branch',
-                'data'  => $data,
-            ], 200);
+            return ResponseHelper::success('Successfully delete Branch');
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 
-    public function assignUser(Request $request, $id)
+    public function assignUser(AssignBranchRequest $request, $id)
     {
 
-        $validator = Validator::make($request->all(), [
-            'branch_id' => 'required|exists:branches,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => true,
-                'message' => $validator->errors()->all()[0]
-            ], 400);
-        }
-
         try {
-            $data = User::where(['id' => $id])->first();
+            $data = User::findBy('id', $id)->where('status', true)->first();
+
             if (!$data) {
-                return response()->json([
-                    'error' => true,
-                    'message' => 'User not found'
-                ], 404);
+                return ResponseHelper::error('User not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }
 
             $data->update([
-                'branch_id' => $request->branch_id
+                'department_id' => $request->department_id
             ]);
 
-            return response()->json([
-                'error' => false,
-                'message' => 'Succesfully assign branch user',
-                'data'  => $data,
-            ], 200);
+            event(new BranchEvent($data, 'assign_user'));
+
+            return ResponseHelper::success('Successfully assign user department');
         } catch (\Throwable $th) {
-            return response()->json([
-                'error' => true,
-                'message' => $th->getMessage()
-            ], 400);
+            return ResponseHelper::error($th->getMessage());
         }
     }
 }

@@ -6,9 +6,15 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\LeaveDaysController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RuleScheduleController;
+use App\Http\Controllers\ScheduleGenerateController;
+use App\Http\Controllers\SubmenuController;
+use App\Http\Controllers\TitleController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +56,12 @@ Route::middleware('auth:api')->group(function () {
         Route::put('/permissions/{id}', [PermissionController::class, 'update']);
         Route::delete('/permissions/{id}', [PermissionController::class, 'destroy']);
 
+        // SUBMENU
+        Route::get('/sub-menus', [SubmenuController::class, 'index']);
+        Route::post('/sub-menus', [SubmenuController::class, 'store']);
+        Route::put('/sub-menus/{id}', [SubmenuController::class, 'update']);
+        Route::delete('/sub-menus/{id}', [SubmenuController::class, 'destroy']);
+
         // USER
         Route::get('/users', [UserController::class, 'index']);
         Route::post('/users', [UserController::class, 'store']);
@@ -62,35 +74,88 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/admin/dashboard', [HomeController::class, 'dashboardAdmin']);
 
         // DEPARTMENT
-        Route::get('/departments', [DepartmentController::class, 'index']);
-        Route::post('/departments', [DepartmentController::class, 'store']);
-        Route::post('/departments/update/{id}', [DepartmentController::class, 'update']);
-        Route::post('/departments/delete/{id}', [DepartmentController::class, 'destroy']);
-        Route::post('/assign-department/{id_user}', [DepartmentController::class, 'assignUser']);
+        Route::prefix('departments')->group(function () {
+            Route::get('/', [DepartmentController::class, 'index']);
+            Route::post('/', [DepartmentController::class, 'store']);
+            Route::post('/update/{id}', [DepartmentController::class, 'update']);
+            Route::post('/delete/{id}', [DepartmentController::class, 'destroy']);
+            Route::post('/assign/{id_user}', [DepartmentController::class, 'assignUser']);
+        });
 
         // BRANCH
-        Route::get('/branches', [BranchController::class, 'index']);
-        Route::post('/branches', [BranchController::class, 'store']);
-        Route::post('/branches/update/{id}', [BranchController::class, 'update']);
-        Route::post('/branches/delete/{id}', [BranchController::class, 'destroy']);
-        Route::post('/assign-branches/{id_user}', [BranchController::class, 'assignUser']);
+        Route::prefix('branches')->group(function () {
+            Route::get('/', [BranchController::class, 'index']);
+            Route::post('/', [BranchController::class, 'store']);
+            Route::post('/update/{id}', [BranchController::class, 'update']);
+            Route::post('/delete/{id}', [BranchController::class, 'destroy']);
+            Route::post('/assign/{id_user}', [BranchController::class, 'assignUser']);
+        });
 
         // ATTENDANCE
-        Route::get('/attendances', [AttendanceController::class, 'index']);
-        Route::post('/attendances', [AttendanceController::class, 'store']);
-        Route::post('/attendances/update/{id}', [AttendanceController::class, 'update']);
-        Route::post('/attendances/delete/{id}', [AttendanceController::class, 'destroy']);
+        Route::prefix('attendances')->group(function () {
+            Route::get('/', [AttendanceController::class, 'index']);
+            Route::post('/', [AttendanceController::class, 'store']);
+            Route::post('/update/{id}', [AttendanceController::class, 'update']);
+            Route::post('/delete/{id}', [AttendanceController::class, 'destroy']);
+        });
 
         // EMPLOYEE
-        Route::get('/employees', [EmployeeController::class, 'index']);
-        Route::post('/employees', [EmployeeController::class, 'store']);
-        Route::post('/employees/update/{id}', [EmployeeController::class, 'update']);
-        Route::post('/employees/delete/{id}', [EmployeeController::class, 'destroy']);
+        Route::prefix('employees')->group(function () {
+            Route::get('/', [EmployeeController::class, 'index']);
+            Route::post('/', [EmployeeController::class, 'store']);
+            Route::post('/update/{id}', [EmployeeController::class, 'update']);
+            Route::post('/delete/{id}', [EmployeeController::class, 'destroy']);
+        });
 
         // RULE SCHEDULE
-        Route::get('/rule-schedules', [RuleScheduleController::class, 'index']);
-        Route::post('/rule-schedules', [RuleScheduleController::class, 'store']);
-        Route::post('/rule-schedules/update/{id}', [RuleScheduleController::class, 'update']);
-        Route::post('/rule-schedules/delete/{id}', [RuleScheduleController::class, 'destroy']);
+        Route::prefix('rule-schedules')->group(function () {
+            Route::get('/', [RuleScheduleController::class, 'index']);
+            Route::post('/', [RuleScheduleController::class, 'store']);
+            Route::post('/update/{id}', [RuleScheduleController::class, 'update']);
+            Route::post('/delete/{id}', [RuleScheduleController::class, 'destroy']);
+        });
+
+        // SCHEDULE GENERATE
+        Route::prefix('schedule-generates')->group(function () {
+            Route::get('/', [ScheduleGenerateController::class, 'index']);
+            Route::post('/', [ScheduleGenerateController::class, 'store']);
+            Route::post('/update/{id}', [ScheduleGenerateController::class, 'update']);
+            Route::post('/delete/{id}', [ScheduleGenerateController::class, 'destroy']);
+        });
+
+        // TITLE
+        Route::prefix('titles')->group(function () {
+            Route::get('/', [TitleController::class, 'index']);
+            Route::post('/', [TitleController::class, 'store']);
+            Route::post('/update/{id}', [TitleController::class, 'update']);
+            Route::post('/delete/{id}', [TitleController::class, 'destroy']);
+        });
+
+        // REPORT
+        Route::prefix('reports')->group(function () {
+            Route::get('/', [ReportController::class, 'index']);
+            Route::post('/', [ReportController::class, 'store']);
+            Route::post('/update/{id}', [ReportController::class, 'update']);
+            Route::post('/delete/{id}', [ReportController::class, 'destroy']);
+            Route::post('/check-types', [ReportController::class, 'checkTypes']);
+            Route::post('/status', [ReportController::class, 'status']);
+        });
+
+        // LEAVE
+        Route::prefix('leaves')->group(function () {
+            Route::get('/', [LeaveController::class, 'index']);
+            Route::post('/', [LeaveController::class, 'store']);
+            Route::post('/update/{id}', [LeaveController::class, 'update']);
+            Route::post('/delete/{id}', [LeaveController::class, 'destroy']);
+            Route::post('/update-status/{id}', [LeaveController::class, 'updateStatus']);
+        });
+
+        // LEAVE DAYS
+        Route::prefix('leave-days')->group(function () {
+            Route::get('/', [LeaveDaysController::class, 'index']);
+            Route::post('/', [LeaveDaysController::class, 'store']);
+            Route::post('/update/{id}', [LeaveDaysController::class, 'update']);
+            Route::post('/delete/{id}', [LeaveDaysController::class, 'destroy']);
+        });
     });
 });

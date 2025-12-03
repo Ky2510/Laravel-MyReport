@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
+use App\Scopes\BranchQueryScope;
+use App\Scopes\FindScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Branch extends Model
 {
-    use HasFactory;
+    use HasFactory, BranchQueryScope, FindScope;
 
     protected $table = 'branches';
 
