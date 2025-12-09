@@ -15,8 +15,10 @@ class CheckRole
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, ...$role): Response
+    public function handle(Request $request, Closure $next, $roles): Response
     {
+        $roles = explode('|', $roles);
+
         $user = Auth::user();
         if (!$user) {
             return response()->json([
@@ -27,7 +29,7 @@ class CheckRole
 
         $userRoles = $user->roles->pluck('name')->toArray();
 
-        $hasRole = count(array_intersect($role, $userRoles)) > 0;
+        $hasRole = count(array_intersect($roles, $userRoles)) > 0;
 
         if (!$hasRole) {
             return response()->json([

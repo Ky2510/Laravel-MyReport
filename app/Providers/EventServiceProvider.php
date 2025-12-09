@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\ActivityEvent;
+use App\Events\ActivityPlanEvent;
 use App\Events\AttendanceEvent;
 use App\Events\BranchEvent;
 use App\Events\DepartmentEvent;
@@ -10,7 +12,10 @@ use App\Events\LeaveEvent;
 use App\Events\ReportEvent;
 use App\Events\RuleScheduleEvent;
 use App\Events\ScheduleGenerateEvent;
+use App\Events\TaskEvent;
 use App\Events\TitleEvent;
+use App\Listeners\ActivityEventListener;
+use App\Listeners\ActivityPlanEventListener;
 use App\Listeners\AttendanceEventListener;
 use App\Listeners\BranchEventListener;
 use App\Listeners\DepartmentEventListener;
@@ -19,6 +24,7 @@ use App\Listeners\LeaveEventListener;
 use App\Listeners\ReportEventListener;
 use App\Listeners\RuleScheduleEventListener;
 use App\Listeners\ScheduleGenerateEventListener;
+use App\Listeners\TaskEventListener;
 use App\Listeners\TitleEventListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -70,6 +76,18 @@ class EventServiceProvider extends ServiceProvider
 
         TitleEvent::class => [
             TitleEventListener::class
+        ],
+
+        ActivityEvent::class => [
+            ActivityEventListener::class
+        ],
+
+        ActivityPlanEvent::class => [
+            ActivityPlanEventListener::class
+        ],
+
+        TaskEvent::class => [
+            TaskEventListener::class
         ],
 
     ];

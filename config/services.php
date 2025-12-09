@@ -31,4 +31,13 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'satusehat' => [
+        'client_id'        => env('SATUSEHAT_CLIENT_ID'),
+        'client_secret'    => env('SATUSEHAT_CLIENT_SECRET'),
+        'organization_id'  => env('SATUSEHAT_ORGANIZATION_ID'),
+        'base_url'         => env('SATUSEHAT_BASE_URL'),
+        'token_url'        => env('SATUSEHAT_TOKEN_URL'),
+    ],
+
+
 ];

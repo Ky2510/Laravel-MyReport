@@ -9,27 +9,27 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class BranchEvent implements ShouldBroadcast
+class TaskEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-
-    public $branch;
-    public $action;
-    public $message;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($branch, $action)
-    {
-        $this->branch = $branch;
-        $this->action = $action;
-        $this->message = "Branch berhasil di $action oleh API.";
+    public $task;
+    public $action;
+    public $message;
 
-        Log::info("BranchEvent triggered", [
+    public function __construct($task, $action)
+    {
+        $this->task = $task;
+        $this->action = $action;
+        $this->message = "Task berhasil di $action oleh API.";
+
+        Log::info("TaskEvent triggered", [
             'action' => $action,
-            'branch_id' => $branch->id,
-            'branch_name' => $branch->name,
+            'task_id' => $task->id,
+            'task_name' => $task->name,
             'source' => 'API'
         ]);
     }
@@ -41,6 +41,6 @@ class BranchEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return  new Channel('branch-channel');
+        return new Channel('task-channel');
     }
 }

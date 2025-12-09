@@ -8,9 +8,9 @@ trait EmployeeQueryScope
 {
     public function scopeFuncEmployeeSearch(Builder $query, $search = null)
     {
-        return $query->where('status', true)
+        return $query->with('department', 'branch', 'ruleSchedule', 'scheduleGenerate', 'title')->where('status', true)
             ->when($search, function ($q) use ($search) {
-                $q->where('id_number', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%");
             })->latest();
     }
 }

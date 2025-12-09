@@ -1,9 +1,13 @@
 <?php
 
+use App\Http\Controllers\ActivityController;
+use App\Http\Controllers\ActivtyPlanController;
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DocumentFileController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeaveController;
@@ -12,11 +16,14 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\RuleScheduleController;
+use App\Http\Controllers\SatuSehatController;
 use App\Http\Controllers\ScheduleGenerateController;
 use App\Http\Controllers\SubmenuController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TitleController;
 use App\Http\Controllers\UserController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\UserCoreController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -156,6 +163,72 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/', [LeaveDaysController::class, 'store']);
             Route::post('/update/{id}', [LeaveDaysController::class, 'update']);
             Route::post('/delete/{id}', [LeaveDaysController::class, 'destroy']);
+        });
+
+        // ACTIVITY
+        Route::prefix('activities')->group(function () {
+            Route::get('/', [ActivityController::class, 'index']);
+            Route::post('/', [ActivityController::class, 'store']);
+            Route::post('/update/{id}', [ActivityController::class, 'update']);
+            Route::post('/delete/{id}', [ActivityController::class, 'destroy']);
+        });
+
+        // TASKS
+        Route::prefix('tasks')->group(function () {
+            Route::get('/', [TaskController::class, 'index']);
+            Route::post('/{id}', [TaskController::class, 'update']);
+        });
+
+        // TEAM AREA MEMBER
+        Route::prefix('areas')->group(function () {
+            Route::get('/', [AreaController::class, 'index']);
+            Route::post('/members', [AreaController::class, 'member']);
+        });
+
+        // TEAM MEMBERS
+        Route::prefix('team-members')->group(function () {
+            Route::get('/', [TeamMemberController::class, 'index']);
+        });
+
+        // ACTIVITY PLANS
+        Route::prefix('activity-plans')->group(function () {
+            Route::get('/', [ActivtyPlanController::class, 'index']);
+            Route::post('/', [ActivtyPlanController::class, 'store']);
+            Route::get('/target-location/{id_activity}', [ActivtyPlanController::class, 'showTarget']);
+            Route::get('/detail/{id_activity}', [ActivtyPlanController::class, 'showDetail']);
+            Route::get('/estimate-time/{id_activity}', [ActivtyPlanController::class, 'showEstimate']);
+            Route::post('/detail/{id_activity}', [ActivtyPlanController::class, 'detail']);
+            Route::post('/estimate-time/{id_activity}', [ActivtyPlanController::class, 'estimate']);
+            Route::post('/task/{id_user}', [ActivtyPlanController::class, 'task']);
+            Route::post('/target-location/{id_activity}', [ActivtyPlanController::class, 'target']);
+        });
+
+        // SATU SEHAT
+        Route::prefix('satu-sehat')->group(function () {
+            Route::get('/generate-token', [SatuSehatController::class, 'generateToken']);
+            Route::get('/hospital', [SatuSehatController::class, 'hospital']);
+            // Route::post('/', [ActivtyPlanController::class, 'store']);
+        });
+
+        // DATA ACTIVITY
+        Route::prefix('data-activities')->group(function () {
+            Route::get('/', [ActivtyPlanController::class, 'index']);
+        });
+
+        // DAILY ACTIVITY
+        Route::prefix('daily-activities')->group(function () {
+            Route::get('/', [ActivtyPlanController::class, 'index']);
+        });
+
+        // DOCUMENT FILE
+        Route::prefix('document-files')->group(function () {
+            Route::get('/', [DocumentFileController::class, 'index']);
+            Route::post('/', [DocumentFileController::class, 'store']);
+        });
+
+        // USER CORE
+        Route::prefix('user-cores')->group(function () {
+            Route::get('/', [UserCoreController::class, 'index']);
         });
     });
 });

@@ -68,12 +68,12 @@ class Employee extends Model
 
     public function ruleSchedule()
     {
-        return $this->belongsTo(RuleSchedule::class, 'rule_schedules_id');
+        return $this->belongsTo(RuleSchedule::class, 'rule_schedule_id');
     }
 
     public function scheduleGenerate()
     {
-        return $this->hasMany(ScheduleGenerate::class, 'rule_schedules_id');
+        return $this->belongsTo(ScheduleGenerate::class, 'rule_schedule_id');
     }
 
     public function title()
