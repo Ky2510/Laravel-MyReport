@@ -15,7 +15,7 @@ class ActivityPlanTargetLocationResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'targetOutlet' => $this->targetOutlet,
+            'targetOutlet' => $this->outlet,
             'reason' => $this->reason,
             'teamMembers' => $this->team_members->map(function ($member) {
                 return [

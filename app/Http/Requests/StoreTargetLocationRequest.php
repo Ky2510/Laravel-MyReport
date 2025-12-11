@@ -32,6 +32,7 @@ class StoreTargetLocationRequest extends FormRequest
             'latitude' => 'nullable|string|max:255',
             'longitude' => 'nullable|string|max:255',
             'target_location' => 'nullable|string',
+            'priority'        => 'nullable|in:low,medium,high'
         ];
     }
 
@@ -39,6 +40,7 @@ class StoreTargetLocationRequest extends FormRequest
     {
         return [
             'teamMembers.array'          => 'Team members must be a list.',
+            'priority.in'                => 'Priority must be one of: low, medium, high.',
         ];
     }
 

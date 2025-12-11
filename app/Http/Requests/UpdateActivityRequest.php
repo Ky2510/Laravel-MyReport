@@ -33,6 +33,7 @@ class UpdateActivityRequest extends FormRequest
             'date'          => 'sometimes|required|date',
             'latitude'      => 'sometimes|required|string|max:100',
             'longitude'     => 'sometimes|required|string|max:100',
+            'facility_code_ssp' => 'sometimes|numeric',
         ];
     }
 
@@ -46,6 +47,7 @@ class UpdateActivityRequest extends FormRequest
             'date.required'          => 'Please enter a valid date.',
             'latitude.required'      => 'Latitude is required.',
             'longitude.required'     => 'Longitude is required.',
+            'facility_code_ssp.numeric' => 'Facility code must be a number.',
         ];
     }
 

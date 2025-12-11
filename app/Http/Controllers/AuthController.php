@@ -3,12 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Swagger\AuthSwagger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Spatie\Permission\Models\Role;
+
+
+/**
+ * @OA\Tag(
+ *     name="Auth",
+ *     description="Authentication endpoints"
+ * )
+ */
 
 class AuthController extends Controller
 {
+    use AuthSwagger;
+
     public function register(Request $request)
     {
         $request->validate([

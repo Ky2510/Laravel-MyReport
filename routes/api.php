@@ -12,6 +12,8 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LeaveDaysController;
+use App\Http\Controllers\OutletController;
+use App\Http\Controllers\OutletTypeController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
@@ -84,8 +86,8 @@ Route::middleware('auth:api')->group(function () {
         Route::prefix('departments')->group(function () {
             Route::get('/', [DepartmentController::class, 'index']);
             Route::post('/', [DepartmentController::class, 'store']);
-            Route::post('/update/{id}', [DepartmentController::class, 'update']);
-            Route::post('/delete/{id}', [DepartmentController::class, 'destroy']);
+            Route::put('/{id}', [DepartmentController::class, 'update']);
+            Route::delete('/{id}', [DepartmentController::class, 'destroy']);
             Route::post('/assign/{id_user}', [DepartmentController::class, 'assignUser']);
         });
 
@@ -203,13 +205,6 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/target-location/{id_activity}', [ActivtyPlanController::class, 'target']);
         });
 
-        // SATU SEHAT
-        Route::prefix('satu-sehat')->group(function () {
-            Route::get('/generate-token', [SatuSehatController::class, 'generateToken']);
-            Route::get('/hospital', [SatuSehatController::class, 'hospital']);
-            // Route::post('/', [ActivtyPlanController::class, 'store']);
-        });
-
         // DATA ACTIVITY
         Route::prefix('data-activities')->group(function () {
             Route::get('/', [ActivtyPlanController::class, 'index']);
@@ -218,6 +213,20 @@ Route::middleware('auth:api')->group(function () {
         // DAILY ACTIVITY
         Route::prefix('daily-activities')->group(function () {
             Route::get('/', [ActivtyPlanController::class, 'index']);
+        });
+
+        // OUTLET
+        Route::prefix('outlets')->group(function () {
+            Route::get('/', [OutletController::class, 'index']);
+            Route::post('/', [OutletController::class, 'store']);
+        });
+
+        // OUTLET TYPE
+        Route::prefix('outlet-types')->group(function () {
+            Route::get('/', [OutletTypeController::class, 'index']);
+            Route::post('/', [OutletTypeController::class, 'store']);
+            Route::put('/{id}', [OutletTypeController::class, 'update']);
+            Route::delete('/{id}', [OutletTypeController::class, 'destroy']);
         });
 
         // DOCUMENT FILE
@@ -229,6 +238,20 @@ Route::middleware('auth:api')->group(function () {
         // USER CORE
         Route::prefix('user-cores')->group(function () {
             Route::get('/', [UserCoreController::class, 'index']);
+        });
+
+
+        // SATU SEHAT
+        Route::prefix('satu-sehat')->group(function () {
+            Route::get('/generate-token', [SatuSehatController::class, 'generateToken']);
+            Route::get('/provinces', [SatuSehatController::class, 'provinces']);
+            Route::get('/cities', [SatuSehatController::class, 'cities']);
+            Route::get('/districts', [SatuSehatController::class, 'districts']);
+            Route::get('/villages', [SatuSehatController::class, 'villages']);
+            Route::get('/hospital', [SatuSehatController::class, 'hospital']);
+            Route::get('/hospital/province', [SatuSehatController::class, 'hospitalsByProvince']);
+            Route::get('/hospital/city', [SatuSehatController::class, 'hospitalsByCity']);
+            Route::get('/hospital/district', [SatuSehatController::class, 'hospitalsByDistrict']);
         });
     });
 });

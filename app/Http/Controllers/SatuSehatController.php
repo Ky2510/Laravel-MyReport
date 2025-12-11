@@ -2,97 +2,145 @@
 
 namespace App\Http\Controllers;
 
+use App\MyHelper\Constants\HttpStatusCodes;
+use App\MyHelper\SatsetHelper;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 
 class SatuSehatController extends Controller
 {
-    public function generateToken()
+
+    public function generateToken(SatsetHelper $svc)
     {
         try {
-            $url = config('services.satusehat.base_url') . '/oauth2/v1/accesstoken?grant_type=client_credentials';
+            $token = $svc->generateToken();
 
-            $response = Http::asForm()
-                ->withOptions(["verify" => false])
-                ->post($url, [
-                    config('services.satusehat.client_id'),
-                    config('services.satusehat.client_secret')
-                ]);
-
-
-
-            if (!$response->successful()) {
-                return response()->json([
-                    'message' => 'Failed to get token',
-                    'error' => $response->json()
-                ], $response->status());
-            }
-
-
-            $data = $response->json();
-            $accessToken = $data['access_token'];
-
-            Cache::put('satusehat_access_token', $accessToken, now()->addSeconds(14399));
-
-            return response()->json(['access_token' => $accessToken], 200);
+            return response()->json([
+                "success" => true,
+                "access_token" => $token
+            ], HttpStatusCodes::HTTP_OK);
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json([
+                "success" => false,
+                "message" => "Failed to generate token",
+                "error" => $e->getMessage()
+            ], HttpStatusCodes::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-
-    public function hospital(Request $request)
+    public function provinces(Request $request, SatsetHelper $svc)
     {
-        try {
-            $accessToken = Cache::get('satusehat_access_token');
-            if (!$accessToken) {
-                return response()->json([
-                    'message' => 'Unauthorized: Access token is missing or expired, please regenerate the token'
-                ], 401);
-            }
+        $data = $svc->request("/masterdata/v1/provinces", [
+            "codes" => $request->codes
+        ]);
 
-            // Ambil limit & page dari request, default jika tidak ada
-            $limit = $request->get('limit', 10);
-            $page  = $request->get('page', 1);
-            $kode_sarana  = $request->get('kode_sarana');
-            $kode_satu_sehat  = $request->get('kode_satu_sehat');
-            $nama  = $request->get('nama');
-            $kode_provinsi  = $request->get('kode_provinsi');
-            $kode_kabkota  = $request->get('kode_kabkota');
-            $kode_kecamatan  = $request->get('kode_kecamatan');
-            $status_aktif  = $request->get('status_aktif');
-            $status_sarana  = $request->get('status_sarana');
+        return response()->json($data);
+    }
 
-            $url = config('services.satusehat.base_url') . '/masterdata/v1/mastersaranaindex/mastersarana';
+    public function cities(Request $request, SatsetHelper $svc)
+    {
+        $request->validate([
+            "province_code" => "required"
+        ]);
 
-            $response = Http::withOptions([
-                'verify' => false
-            ])->withToken($accessToken)
-                ->get($url, [
-                    'limit' => $limit,
-                    'page'  => $page,
-                    'jenis_sarana' => 104,
-                    'kode_sarana' => $kode_sarana,
-                    'kode_satu_sehat' => $kode_satu_sehat,
-                    'nama' => $nama,
-                    'kode_provinsi' => $kode_provinsi,
-                    'kode_kabkota' => $kode_kabkota,
-                    'kode_kecamatan' => $kode_kecamatan,
-                    'status_aktif' => $status_aktif,
-                    'status_sarana' => $status_sarana,
-                ]);
+        $data = $svc->request("/masterdata/v1/cities", [
+            "province_codes" => $request->province_code
+        ]);
 
-            if (!$response->successful()) {
-                return response()->json([
-                    'message' => 'Failed to get hospital data',
-                    'error'   => $response->json()
-                ], $response->status());
-            }
+        return response()->json($data);
+    }
 
-            return response()->json($response->json(), 200);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
-        }
+    public function districts(Request $request, SatsetHelper $svc)
+    {
+        $request->validate([
+            'city_code' => 'required',
+        ]);
+
+        $data = $svc->request("/masterdata/v1/districts", [
+            "city_codes" => $request->city_code
+        ]);
+
+        return response()->json($data);
+    }
+
+    public function villages(Request $request, SatsetHelper $svc)
+    {
+        $request->validate([
+            'district_code' => 'required',
+        ]);
+
+        $data = $svc->request("/masterdata/v1/sub-districts", [
+            "district_codes" => $request->district_code
+        ]);
+
+        return response()->json($data);
+    }
+
+    public function hospitals(Request $request, SatsetHelper $svc)
+    {
+        $params = [
+            "limit"          => $request->get('limit', 10),
+            "page"           => $request->get('page', 1),
+            "jenis_sarana"   => 104,
+            "kode_sarana"    => $request->kode_sarana,
+            "kode_satu_sehat" => $request->kode_satu_sehat,
+            "nama"           => $request->nama,
+            "kode_provinsi"  => $request->kode_provinsi,
+            "kode_kabkota"   => $request->kode_kabkota,
+            "kode_kecamatan" => $request->kode_kecamatan,
+            "status_aktif"   => $request->status_aktif,
+            "status_sarana"  => $request->status_sarana,
+        ];
+
+        $data = $svc->request("/masterdata/v1/mastersaranaindex/mastersarana", $params);
+
+        return response()->json($data);
+    }
+
+    public function hospitalsByProvince(Request $request, SatsetHelper $svc)
+    {
+        $request->validate([
+            "province_code" => "required"
+        ]);
+
+        $data = $svc->request("/masterdata/v1/mastersaranaindex/mastersarana", [
+            "limit" => $request->limit ?? 10,
+            "page"  => $request->page ?? 1,
+            "jenis_sarana" => 104,
+            "kode_provinsi" => $request->province_code
+        ]);
+
+        return response()->json($data);
+    }
+
+    public function hospitalsByCity(Request $request, SatsetHelper $svc)
+    {
+        $request->validate([
+            "city_code" => "required"
+        ]);
+
+        $data = $svc->request("/masterdata/v1/mastersaranaindex/mastersarana", [
+            "limit" => $request->limit ?? 10,
+            "page"  => $request->page ?? 1,
+            "jenis_sarana" => 104,
+            "kode_kabkota" => $request->city_code
+        ]);
+
+        return response()->json($data);
+    }
+
+    public function hospitalsByDistrict(Request $request, SatsetHelper $svc)
+    {
+        $request->validate([
+            "district_code" => "required"
+        ]);
+
+        $data = $svc->request("/masterdata/v1/mastersaranaindex/mastersarana", [
+            "limit" => $request->limit ?? 10,
+            "page"  => $request->page ?? 1,
+            "jenis_sarana" => 104,
+            "kode_kecamatan" => $request->district_code
+        ]);
+
+        return response()->json($data);
     }
 }

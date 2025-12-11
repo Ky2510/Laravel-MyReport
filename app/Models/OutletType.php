@@ -2,39 +2,28 @@
 
 namespace App\Models;
 
-use App\Scopes\ActivityQueryScope;
 use App\Scopes\FindScope;
+use App\Scopes\OutletTypeQueryScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class Activity extends Model
+class OutletType extends Model
 {
-    use HasFactory, ActivityQueryScope, FindScope;
+    use HasFactory, OutletTypeQueryScope, FindScope;
 
-    protected $table = 'activities';
+    protected $table = 'outlet_types';
 
     protected $primaryKey = 'id';
 
     public $incrementing = false;
 
-    public $timestamps = true;
-
     protected $keyType = 'string';
 
     protected $fillable = [
-        'id_user',
-        'facility_code_ssp',
-        'hospital_name',
-        'person_name',
-        'occupation',
-        'notes',
-        'date',
-        'latitude',
-        'longitude',
-        'created_at',
-        'updated_at'
+        'name'
     ];
+
 
     protected static function boot()
     {

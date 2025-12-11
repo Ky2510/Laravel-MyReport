@@ -25,22 +25,26 @@ class StoreActivityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'id_user'       => 'required|string|exists:users,id',
-            'hospital_name' => 'required|string|max:255',
-            'person_name'   => 'required|string|max:255',
-            'occupation'    => 'nullable|string|max:255',
-            'notes'         => 'nullable|string',
-            'date'          => 'required|date',
-            'latitude'      => 'required|string|max:100',
-            'longitude'     => 'required|string|max:100',
+            'id_user'            => 'required|string|exists:users,id',
+            'facility_code_ssp'  => 'required|numeric',
+            'hospital_name'      => 'required|string|max:255',
+            'person_name'        => 'required|string|max:255',
+            'occupation'         => 'nullable|string|max:255',
+            'notes'              => 'nullable|string',
+            'date'               => 'required|date',
+            'latitude'           => 'required|string|max:100',
+            'longitude'          => 'required|string|max:100',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'id_user.required' => 'Please select a user first.',
-            'id_user.exists'   => 'The selected user doesn’t exist. Please check again.',
+            'id_user.required'           => 'Please select a user first.',
+            'id_user.exists'             => 'The selected user doesn’t exist. Please check again.',
+
+            'facility_code_ssp.required' => 'Facility code SSP cannot be empty.',
+            'facility_code_ssp.numeric'  => 'Facility code must contain numbers only.',
 
             'hospital_name.required' => 'Please enter the hospital name.',
             'hospital_name.string'   => 'Hospital name must be valid text.',

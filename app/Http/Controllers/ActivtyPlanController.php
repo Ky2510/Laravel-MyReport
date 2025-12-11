@@ -20,12 +20,13 @@ use App\Models\TeamMember;
 use App\MyHelper\ActivityPlanHelper;
 use App\MyHelper\Constants\HttpStatusCodes;
 use App\MyHelper\ResponseHelper;
+use App\Swagger\ActivityPlanSwagger;
 use Illuminate\Http\Request;
 
 class ActivtyPlanController extends Controller
 {
 
-    use DatatableValidation;
+    use DatatableValidation, ActivityPlanSwagger;
 
 
     public function index(Request $request)
@@ -72,7 +73,7 @@ class ActivtyPlanController extends Controller
     public function showTarget(Request $request, $id)
     {
         try {
-            $data = ActivtyPlan::with('tasks', 'user', 'team_members.user_core.areas')->findBy('activityPlanId', $id)->first();
+            $data = ActivtyPlan::with('tasks', 'user', 'outlet.area', 'team_members.user_core.areas')->findBy('activityPlanId', $id)->first();
             if (!$data) {
                 return ResponseHelper::error('Activity plan not found', HttpStatusCodes::HTTP_NOT_FOUND);
             }

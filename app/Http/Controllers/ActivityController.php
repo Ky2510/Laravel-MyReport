@@ -11,6 +11,7 @@ use App\Models\Activity;
 use App\MyHelper\Constants\HttpStatusCodes;
 use App\MyHelper\ResponseHelper;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class ActivityController extends Controller
 {

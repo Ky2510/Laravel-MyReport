@@ -106,6 +106,12 @@ class ActivtyPlan extends Model
     }
 
 
+    public function outlet()
+    {
+        return $this->belongsTo(Outlet::class, 'targetOutlet', 'outletId');
+    }
+
+
     public function calculateProgress()
     {
         $total = $this->tasks()->count();

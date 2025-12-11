@@ -12,12 +12,19 @@ use App\Models\Department;
 use App\Models\User;
 use App\MyHelper\Constants\HttpStatusCodes;
 use App\MyHelper\ResponseHelper;
+use App\Swagger\DepartmentSwagger;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+
+
+/**
+ * @OA\Tag(name="Department", description="API untuk Department")
+ */
 
 class DepartmentController extends Controller
 {
-    use DatatableValidation;
+    use DatatableValidation, DepartmentSwagger;
+
+
 
     public function index(Request $request)
     {
@@ -42,6 +49,7 @@ class DepartmentController extends Controller
             return ResponseHelper::error($th->getMessage());
         }
     }
+
 
     public function store(StoreDepartmentRequest $request)
     {
@@ -91,7 +99,7 @@ class DepartmentController extends Controller
             ]);
 
 
-            return ResponseHelper::success('Successfully delete Report');
+            return ResponseHelper::success('Successfully delete Department');
         } catch (\Throwable $th) {
             return ResponseHelper::error($th->getMessage());
         }
