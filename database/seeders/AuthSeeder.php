@@ -3,59 +3,60 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 use App\Models\User;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class AuthSeeder extends Seeder
 {
     public function run()
     {
-        // Buat permissions (API guard)
-        $permissions = [
-            'create-post',
-            'edit-post',
-            'delete-post'
-        ];
+        $now = Carbon::now();
 
-        foreach ($permissions as $item) {
-            Permission::firstOrCreate([
-                'name' => $item,
-                'guard_name' => 'api'
-            ]);
-        }
-
-        // Buat roles
-        $admin = Role::firstOrCreate([
-            'name' => 'admin',
-            'guard_name' => 'api'
-        ]);
-
-        $user = Role::firstOrCreate([
-            'name' => 'user',
-            'guard_name' => 'api'
-        ]);
-
-        $super = Role::firstOrCreate([
-            'name' => 'superadmin',
-            'guard_name' => 'api'
-        ]);
-
-        // Beri permission
-        $admin->givePermissionTo(Permission::all());
-        $user->givePermissionTo('edit-post');
-        $super->givePermissionTo(Permission::all());
-
-        // Buat akun SuperAdmin
-        $superUser = User::firstOrCreate(
-            ['email' => 'super@admin.com'],
+        // --- CREATE ROLE ---
+        $superRole = Role::firstOrCreate(
+            ['name' => 'super_admin'],
             [
-                'name' => 'Super Admin',
-                'password' => bcrypt('password123'),
-                'token' => null
+                'id' => (string) Str::uuid(),
+                'guard_name' => 'api',
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
         );
 
-        $superUser->assignRole('superadmin');
+        // --- CREATE USER ---
+        $user = User::firstOrCreate(
+            ['email' => 'superadmin@example.com'],
+            [
+                'id' => (string) Str::uuid(),
+                'username' => 'superadmin',
+                'name' => 'Super Admin',
+                'password' => bcrypt('password123'),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]
+        );
+
+
+        // --- ASSIGN ROLE ---
+        if (!$user->hasRole('super_admin')) {
+            $user->assignRole('super_admin');
+        }
+
+        DB::table('user_roles')->updateOrInsert(
+            [
+                'userId' => $user->id,
+                'roleId' => $superRole->id,
+            ],
+            [
+                'id'        => (string) Str::uuid(), // WAJIB INI!
+                'createBy'  => $user->id,
+                'updateBy'  => $user->id,
+                'createdAt' => $now,
+                'updatedAt' => $now,
+            ]
+        );
     }
 }
