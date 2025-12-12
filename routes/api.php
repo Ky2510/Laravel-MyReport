@@ -52,8 +52,10 @@ Route::middleware('auth:api')->group(function () {
     Route::middleware('check_role:super_admin')->group(function () {
         Route::get('/superadmin/dashboard', [HomeController::class, 'dashboardSuperAdmin']);
 
+
         // ROLE
         Route::get('/roles', [RoleController::class, 'index']);
+        Route::post('/roles/assign-role/{id}', [RoleController::class, 'assignRole']);
         Route::post('/roles', [RoleController::class, 'store']);
         Route::get('/roles/{id}', [RoleController::class, 'show']);
         Route::put('/roles/{id}', [RoleController::class, 'update']);
