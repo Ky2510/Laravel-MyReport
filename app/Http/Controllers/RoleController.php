@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\MyHelper\Constants\HttpStatusCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
@@ -146,6 +148,57 @@ class RoleController extends Controller
 
         return response()->json([
             'message' => 'Role deleted successfully'
+        ]);
+    }
+
+    public function assignRole(Request $request, $userId)
+    {
+        $request->validate([
+            'role' => 'required|string'
+        ]);
+
+        if (!auth()->user()->hasRole('super_admin')) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $user = User::findOrFail($userId);
+
+        $role = Role::where('id', $request->role)->first();
+
+        if (!$role) {
+            return response()->json(['message' => 'Role not found'], 404);
+        }
+
+        $user->syncRoles([$role->id]);
+
+        // cek user_roles
+        $existing = DB::table('user_roles')->where('userId', $userId)->first();
+
+        if ($existing) {
+
+            DB::table('user_roles')
+                ->where('userId', $userId)
+                ->update([
+                    'roleId' => $role->id,
+                    'createBy' => auth()->user()->id,
+                    'updateBy' => auth()->user()->id,
+                    'updatedAt' => now(),
+                ]);
+        } else {
+
+            DB::table('user_roles')->insert([
+                'id' => Str::uuid(),
+                'userId' => $userId,
+                'roleId' => $role->id,
+                'createBy' => auth()->user()->id,
+                'updateBy' => auth()->user()->id,
+                'updatedAt' => now(),
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Role assigned successfully',
+            'user' => $user
         ]);
     }
 }
